@@ -24,7 +24,7 @@ const doc = {
 
 // List your main route files
 const routes = [
-  "./routers/loginRouther.js",    // public routes
+  "./routers/loginRouther.js", // public routes
   "./routers/boardRouter.js",
   "./routers/columnRouter.js",
   "./routers/subtaskRouter.js",

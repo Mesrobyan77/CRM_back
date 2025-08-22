@@ -10,7 +10,6 @@ loginRouter.post("/api/auth/google", AuthController.googleLogin);
 loginRouter.post("/api/auth/forgot-password", AuthController.forgotPassword);
 loginRouter.post("/api/auth/reset-password", AuthController.resetPassword);
 loginRouter.get("/api/auth/verify-email", AuthController.verifyEmail);
-loginRouter.get("/api/auth/me",authMiddleware, AuthController.GetMe);
+loginRouter.get("/api/auth/me", authMiddleware, AuthController.GetMe);
 
 module.exports = loginRouter;
- 

@@ -79,7 +79,7 @@ class TaskController {
           priority: "normal",
           columnId: column.id,
         },
-        { transaction: t }
+        { transaction: t },
       );
 
       // 6) Assign users (UserTasks)
@@ -152,6 +152,7 @@ class TaskController {
     }
   }
 
+  // Update an existing task
   async getTaskById(req, res) {
     try {
       const { taskId } = req.params;
@@ -160,9 +161,15 @@ class TaskController {
           { model: Subtask },
           {
             model: Comment,
-            include: [{ model: User, attributes: ["id", "userName","avatar"] }],
+            include: [
+              { model: User, attributes: ["id", "userName", "avatar"] },
+            ],
           },
-          { model: User, as: "assignedUsers", attributes: ["id", "userName","avatar"] },
+          {
+            model: User,
+            as: "assignedUsers",
+            attributes: ["id", "userName", "avatar"],
+          },
         ],
       });
 
@@ -184,7 +191,11 @@ class TaskController {
         include: [
           { model: Column, include: [{ model: Board }] },
           { model: Subtask },
-          { model: User, as: "assignedUsers", attributes: ["id", "userName","avatar"] },
+          {
+            model: User,
+            as: "assignedUsers",
+            attributes: ["id", "userName", "avatar"],
+          },
         ],
         order: [["order", "ASC"]],
       });
@@ -229,7 +240,6 @@ class TaskController {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // Delete associated data
       await Subtask.destroy({ where: { taskId }, transaction });
       await Comment.destroy({ where: { taskId }, transaction });
       await UserTask.destroy({ where: { taskId }, transaction });
@@ -283,39 +293,34 @@ class TaskController {
           .json({ message: "taskId and columnId are required" });
       }
 
-      // 1) Get task
       const task = await Task.findByPk(taskId, { transaction: t });
       if (!task) {
         await t.rollback();
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // 2) Validate destination column
       const toColumn = await Column.findByPk(columnId, { transaction: t });
       if (!toColumn) {
         await t.rollback();
         return res.status(404).json({ message: "Column not found" });
       }
 
-      // 3) Append at end of destination
       const maxOrder = await Task.max("order", {
         where: { columnId },
         transaction: t,
       });
       const toIndex = Number.isFinite(maxOrder) ? maxOrder + 1 : 0;
 
-      // 4) Compact source column if changed
       if (task.columnId !== columnId && Number.isFinite(task.order)) {
         await Task.update(
           { order: sequelize.literal("`order` - 1") },
           {
             where: { columnId: task.columnId, order: { [Op.gt]: task.order } },
             transaction: t,
-          }
+          },
         );
       }
 
-      // 5) Move the task
       await task.update({ columnId, order: toIndex }, { transaction: t });
 
       await t.commit();
@@ -326,8 +331,6 @@ class TaskController {
       return res.status(500).json({ message: "move failed", error: String(e) });
     }
   }
-
-  
 }
 
 module.exports = new TaskController();

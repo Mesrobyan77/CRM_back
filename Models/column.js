@@ -5,6 +5,6 @@ module.exports = (sequelize) => {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     order: { type: DataTypes.INTEGER }, // for drag-and-drop sorting
     boardId: { type: DataTypes.INTEGER, allowNull: false },
-    columnNameId: { type: DataTypes.INTEGER, allowNull: false}, // foreign key
+    columnNameId: { type: DataTypes.INTEGER, allowNull: false }, // foreign key
   });
 };

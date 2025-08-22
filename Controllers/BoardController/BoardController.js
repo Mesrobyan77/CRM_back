@@ -1,4 +1,11 @@
-const { Board, Column, Task, Subtask, User ,Comment} = require("../../Models/rootModel");
+const {
+  Board,
+  Column,
+  Task,
+  Subtask,
+  User,
+  Comment,
+} = require("../../Models/rootModel");
 
 class BoardController {
   async addBoard(req, res) {
@@ -34,7 +41,7 @@ class BoardController {
 
   async getBoardById(req, res) {
     const { id } = req.params;
-  
+
     try {
       const board = await Board.findByPk(id, {
         include: [
@@ -48,7 +55,7 @@ class BoardController {
                     model: Subtask,
                   },
                   {
-                    model: User, 
+                    model: User,
                   },
                   {
                     model: Comment,
@@ -64,16 +71,15 @@ class BoardController {
           },
         ],
       });
-  
+
       if (!board) return res.status(404).json({ error: "Board not found" });
-  
+
       res.json(board);
     } catch (error) {
       console.error("Error fetching board:", error);
       res.status(500).json({ error: "Failed to fetch board" });
     }
   }
-  
 }
 
 module.exports = new BoardController();

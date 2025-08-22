@@ -1,5 +1,5 @@
 require("dotenv").config();
-function resetPasswordTemp(username, code) { 
+function resetPasswordTemp(username, code) {
   return `
     <!DOCTYPE html>
     <html lang="en">

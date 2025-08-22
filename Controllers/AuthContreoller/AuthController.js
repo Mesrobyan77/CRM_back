@@ -11,7 +11,6 @@ const {
 } = require("./getEmailVerificationTemplate");
 const { resetPasswordTemp } = require("./resetPasswordTemp");
 
-// Regular expression for password validation
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
@@ -19,22 +18,20 @@ class AuthController {
   // Refresh access token using refresh token
   async refresh(req, res) {
     try {
-      const { refreshToken } = req.body; // frontend-ից refreshToken կուղարկես body֊ով
+      const { refreshToken } = req.body;
       if (!refreshToken) {
         return res.status(401).json({ error: "Refresh token required" });
       }
 
-      // Վերահսկում ենք refreshToken֊ը
       jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, user) => {
         if (err) {
           return res.status(403).json({ error: "Invalid refresh token" });
         }
 
-        // Ստեղծում ենք նոր access token
         const newAccessToken = jwt.sign(
-          { id: user.id }, // refreshToken֊ից եկած user info
+          { id: user.id },
           process.env.JWT_SECRET,
-          { expiresIn: "15m" } // accessToken-ը կարճ ժամկետով
+          { expiresIn: "15m" },
         );
 
         res.json({ accessToken: newAccessToken });
@@ -44,6 +41,7 @@ class AuthController {
       res.status(500).json({ error: "Something went wrong" });
     }
   }
+
   // Register a new user
   async register(req, res) {
     try {
@@ -65,13 +63,9 @@ class AuthController {
         });
       }
 
-      // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Generate 6-digit verification code
       const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Send verification email FIRST
       const transporter = nodemailer.createTransport({
         host: "smtp.mail.ru",
         port: 465,
@@ -89,7 +83,6 @@ class AuthController {
         html: getEmailVerificationTemplate(userName, verifyCode, email),
       });
 
-      // After sending email successfully, add user to DB
       await User.create({
         userName,
         email,
@@ -109,7 +102,7 @@ class AuthController {
     }
   }
 
-  // Login user and generate access and refresh tokens
+  // Login user
   async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -133,26 +126,23 @@ class AuthController {
         return res.status(403).json({ error: "Email not verified" });
       }
 
-      // Generate Access Token
       const accessToken = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET || "accessSecretKey",
-        { expiresIn: "15m" }
+        { expiresIn: "15m" },
       );
 
-      // Generate Refresh Token
       const refreshToken = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_REFRESH_SECRET || "refreshSecretKey",
-        { expiresIn: "7d" }
+        { expiresIn: "7d" },
       );
 
-      // Set Refresh Token in HttpOnly cookie
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       res.status(200).json({
@@ -173,7 +163,6 @@ class AuthController {
         return res.status(400).json({ error: "Token ID is required" });
       }
 
-      // Verify Google token
       const ticket = await client.verifyIdToken({
         idToken: tokenId,
         audience: process.env.GOOGLE_CLIENT_ID,
@@ -186,7 +175,6 @@ class AuthController {
         return res.status(400).json({ error: "No email returned from Google" });
       }
 
-      // Find or create user
       let user = await User.findOne({ where: { email } });
       if (user && user.dataValues.authProvider !== "google") {
         return res
@@ -204,20 +192,18 @@ class AuthController {
         });
       }
 
-      // Create tokens
       const accessToken = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: "15m" },
       );
 
       const refreshToken = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_REFRESH_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn: "7d" },
       );
 
-      // Set refresh token in HttpOnly cookie
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -238,7 +224,7 @@ class AuthController {
   // Verify email using verification code
   async verifyEmail(req, res) {
     try {
-      const { email, code } = req.query; // query parameters
+      const { email, code } = req.query;
 
       if (!email || !code) {
         return res.status(400).json({ error: "Email and code are required" });
@@ -258,17 +244,14 @@ class AuthController {
       user.verifyCode = null;
       await user.save();
 
-      // Optionally redirect to frontend page
       return res.redirect(`${process.env.FRONTEND_URL}/email-verified-success`);
-
-      // կամ ուղարկիր JSON եթե ուզում ես API ձև
-      // res.json({ message: "Email verified successfully" });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Email verification failed" });
     }
   }
 
+  // Get user data
   async GetMe(req, res) {
     try {
       const user = req.user;
@@ -298,6 +281,7 @@ class AuthController {
     }
   }
 
+  // forgot password handler
   async forgotPassword(req, res) {
     try {
       const { email } = req.body;
@@ -339,6 +323,7 @@ class AuthController {
     }
   }
 
+  // Reset password handler
   async resetPassword(req, res) {
     try {
       const { code, newPassword, email } = req.body;
@@ -363,8 +348,6 @@ class AuthController {
             "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
         });
       }
-
-      // Hash password
       const hashed = await bcrypt.hash(newPassword, 10);
       user.password = hashed;
       await user.save();

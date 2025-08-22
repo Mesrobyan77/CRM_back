@@ -15,18 +15,15 @@ class SubtaskController {
     }
   }
 
-
   async updateSubtask(req, res) {
     try {
-      const { subtaskId } = req.params; 
+      const { subtaskId } = req.params;
       const { title, isDone } = req.body;
-
 
       const subtask = await Subtask.findByPk(subtaskId);
       if (!subtask) {
         return res.status(404).json({ error: "Subtask not found" });
       }
-
 
       if (title !== undefined) subtask.title = title;
       if (isDone !== undefined) subtask.isDone = isDone;

@@ -4,7 +4,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generateDoc": "node swagger.js"
+    "generateDoc": "node swagger.js",
+    "format": "prettier --write \"**/*.{js,json,md}\""
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "mysql2": "^3.14.3",
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
     "sequelize": "^6.37.7",
     "swagger-autogen": "^2.23.7",
     "swagger-jsdoc": "^6.2.8",

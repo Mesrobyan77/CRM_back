@@ -1,6 +1,5 @@
 const sequelize = require("../config/db");
 
-// Import model functions
 const userModel = require("./userModel");
 const workspaceModel = require("./workspace");
 const boardModel = require("./board");
@@ -9,9 +8,8 @@ const taskModel = require("./task");
 const subtaskModel = require("./subtask");
 const commentModel = require("./comment");
 const userTaskModel = require("./userTask");
-const columnNameModel = require("./columnName")
+const columnNameModel = require("./columnName");
 
-// Initialize models
 const User = userModel(sequelize);
 const Workspace = workspaceModel(sequelize);
 const Board = boardModel(sequelize);
@@ -21,7 +19,7 @@ const Subtask = subtaskModel(sequelize);
 const Comment = commentModel(sequelize);
 const UserTask = userTaskModel(sequelize);
 const ColumnName = columnNameModel(sequelize);
-// ==================== RELATIONSHIPS ====================
+
 Workspace.hasMany(Board, { foreignKey: "workspaceId" });
 Board.belongsTo(Workspace, { foreignKey: "workspaceId" });
 
@@ -49,9 +47,16 @@ Comment.belongsTo(Task, { foreignKey: "taskId" });
 User.hasMany(Comment, { foreignKey: "userId" });
 Comment.belongsTo(User, { foreignKey: "userId" });
 
-Task.belongsToMany(User, { through: UserTask, as: "assignedUsers", foreignKey: "taskId" });
-User.belongsToMany(Task, { through: UserTask, as: "assignedTasks", foreignKey: "userId" });
-
+Task.belongsToMany(User, {
+  through: UserTask,
+  as: "assignedUsers",
+  foreignKey: "taskId",
+});
+User.belongsToMany(Task, {
+  through: UserTask,
+  as: "assignedTasks",
+  foreignKey: "userId",
+});
 
 Task.hasMany(Subtask, { foreignKey: "taskId" });
 Subtask.belongsTo(Task, { foreignKey: "taskId" });
@@ -68,8 +73,8 @@ module.exports = {
   Board,
   Column,
   Task,
-  Subtask, 
+  Subtask,
   Comment,
   UserTask,
-  ColumnName
+  ColumnName,
 };

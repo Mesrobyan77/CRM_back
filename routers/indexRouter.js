@@ -4,12 +4,10 @@ const taskRouter = require("./tasksRouter");
 const subtaskRouter = require("./subtaskRouter");
 const workspaceRouter = require("./workspaceRouter");
 
-
 module.exports = {
-    boardRouter,
-    columnRouter,
-    taskRouter,
-    subtaskRouter,
-    workspaceRouter,
-
+  boardRouter,
+  columnRouter,
+  taskRouter,
+  subtaskRouter,
+  workspaceRouter,
 };

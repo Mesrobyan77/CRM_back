@@ -9,9 +9,9 @@ const sequelize = new Sequelize(
   process.env.DB_PASS,
   {
     host: process.env.DB_HOST,
-    dialect: "mysql", // change to your DB dialect
-    port: process.env.DB_PORT || 3306, // default MySQL port    
-  }
+    dialect: "mysql",
+    port: process.env.DB_PORT || 3306,
+  },
 );
 
 module.exports = sequelize;
