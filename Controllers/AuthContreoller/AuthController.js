@@ -4,6 +4,7 @@ const { User } = require("../../Models/rootModel");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
+const { Op } = require("sequelize");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -77,7 +78,6 @@ class AuthController {
             const user = await User.findByPk(newUser.id);
             if (user && !user.isEmailVerified) {
               await user.destroy();
-              console.log(`Unverified user ${user.email} deleted`);
             }
           } catch (err) {
             console.error("Auto-delete error:", err);
@@ -249,15 +249,20 @@ class AuthController {
   async GetMe(req, res) {
     try {
       const user = req.user;
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const userData = await User.findByPk(user.id);
+
+      if (!userData)
+        return res.status(404).json({ error: "User data not found" });
 
       return res.json({
         message: "User data fetched successfully",
         user: {
           id: user.id,
-          userName: user.userName,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          avatar: user.avatar,
+          userName: userData.userName,
+          email: userData.email,
+          phoneNumber: userData.phoneNumber,
+          avatar: userData.avatar,
         },
       });
     } catch (error) {
@@ -331,6 +336,37 @@ class AuthController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: "Invalid or expired token" });
+    }
+  }
+
+  async search(req, res) {
+    try {
+      const { q } = req.query;
+
+      let users;
+
+      if (!q || q.trim().length === 0) {
+        // If query is empty, return all users
+        users = await User.findAll({
+          attributes: ["id", "userName", "email", "avatar"],
+        });
+      } else {
+        // Search by username or email
+        users = await User.findAll({
+          where: {
+            [Op.or]: [
+              { userName: { [Op.like]: `%${q}%` } },
+              { email: { [Op.like]: `%${q}%` } },
+            ],
+          },
+          attributes: ["id", "userName", "email", "avatar"],
+        });
+      }
+
+      return res.json(users);
+    } catch (error) {
+      console.error("Search error:", error);
+      return res.status(500).json({ error: "Something went wrong" });
     }
   }
 }

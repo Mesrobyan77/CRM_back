@@ -1,6 +1,5 @@
 require("dotenv").config();
 function getEmailVerificationTemplate(username, code, email) {
-  console.log(process.env.BACKEND_URL);
   const verificationLink = `${
     process.env.BACKEND_URL
   }/api/auth/verify-email?email=${encodeURIComponent(email)}&code=${code}`;

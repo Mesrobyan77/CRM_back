@@ -27,4 +27,10 @@ taskRouter.get(
   TaskController.searchTask,
 );
 
+taskRouter.get(
+  "/api/home/tasks/urgency",
+  authMiddleware,
+  TaskController.urgency,
+);
+
 module.exports = taskRouter;

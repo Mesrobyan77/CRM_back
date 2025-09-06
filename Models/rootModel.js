@@ -9,6 +9,7 @@ const subtaskModel = require("./subtask");
 const commentModel = require("./comment");
 const userTaskModel = require("./userTask");
 const columnNameModel = require("./columnName");
+const notificationModel = require("./notification");
 
 const User = userModel(sequelize);
 const Workspace = workspaceModel(sequelize);
@@ -19,6 +20,7 @@ const Subtask = subtaskModel(sequelize);
 const Comment = commentModel(sequelize);
 const UserTask = userTaskModel(sequelize);
 const ColumnName = columnNameModel(sequelize);
+const Notification = notificationModel(sequelize);
 
 Workspace.hasMany(Board, { foreignKey: "workspaceId" });
 Board.belongsTo(Workspace, { foreignKey: "workspaceId" });
@@ -65,6 +67,48 @@ Subtask.belongsTo(Task, { foreignKey: "taskId" });
 Column.belongsTo(ColumnName, { foreignKey: "columnNameId" });
 ColumnName.hasMany(Column, { foreignKey: "columnNameId" });
 
+User.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(User, { foreignKey: "userId" });
+
+Task.hasMany(Notification, { foreignKey: "taskId" });
+Notification.belongsTo(Task, { foreignKey: "taskId" });
+
+User.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(User, { foreignKey: "userId" });
+
+Workspace.hasMany(Notification, { foreignKey: "workspaceId" });
+Notification.belongsTo(Workspace, { foreignKey: "workspaceId" });
+
+// Task -> Column
+Task.belongsTo(Column, { foreignKey: "columnId" });
+Column.hasMany(Task, { foreignKey: "columnId" });
+
+// Column -> Board
+Column.belongsTo(Board, { foreignKey: "boardId" });
+Board.hasMany(Column, { foreignKey: "boardId" });
+
+// Task -> SubTask
+Task.hasMany(Subtask, { foreignKey: "taskId", as: "SubTasks" });
+Subtask.belongsTo(Task, { foreignKey: "taskId" });
+
+User.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(User, { foreignKey: "userId" });
+Task.hasMany(Notification, { foreignKey: "taskId" });
+Notification.belongsTo(Task, { foreignKey: "taskId" });
+Subtask.hasMany(Notification, { foreignKey: "subtaskId" });
+Notification.belongsTo(Subtask, { foreignKey: "subtaskId" });
+User.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(User, { foreignKey: "userId" });
+Board.hasMany(Notification, { foreignKey: "boardId" });
+Notification.belongsTo(Board, { foreignKey: "boardId" });
+Column.hasMany(Notification, { foreignKey: "columnId" });
+Notification.belongsTo(Column, { foreignKey: "columnId" });
+User.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(User, { foreignKey: "userId" });
+Workspace.hasMany(Notification, { foreignKey: "workspaceId" });
+Notification.belongsTo(Workspace, { foreignKey: "workspaceId" });
+Board.hasMany(Notification, { foreignKey: "boardId" });
+Notification.belongsTo(Board, { foreignKey: "boardId" });
 // Export everything
 module.exports = {
   sequelize,
@@ -77,4 +121,21 @@ module.exports = {
   Comment,
   UserTask,
   ColumnName,
+  Notification,
 };
+
+// // routes/index.js
+// const express = require('express');
+// const router = express.Router();
+// const userTaskController = require('../controllers/userTaskController');
+// const commentController = require('../controllers/commentController');
+// const taskController = require('../controllers/taskController');
+// const notificationController = require('../controllers/notificationController');
+
+// router.post('/user-task', userTaskController.assignUserToTask);
+// router.post('/comment', commentController.createComment);
+// router.put('/task/:taskId', taskController.updateTask);
+// router.get('/notifications/:userId', notificationController.getNotifications);
+// router.put('/notifications/:notificationId/read', notificationController.markNotificationAsRead);
+
+// module.exports = router;
