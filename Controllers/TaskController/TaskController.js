@@ -25,17 +25,16 @@ class TaskController {
         description = null,
         timeStart = null,
         timeEnd = null,
+        priority = null,
         assignedUserIds = [],
-        Subtask = [],
+        subtasks = [],
         comments = [],
         createdBy = req.user.id,
       } = req.body;
-
       if (!title) {
         await t.rollback();
         return res.status(400).json({ message: "title is required" });
       }
-
       // 1) Workspace(name = title)
       const [workspace] = await Workspace.findOrCreate({
         where: { name: title },
@@ -78,11 +77,11 @@ class TaskController {
           description,
           timeStart,
           timeEnd,
-          status: "open",
-          priority: "normal",
+          status: "start",
+          priority,
           columnId: column.id,
         },
-        { transaction: t },
+        { transaction: t }
       );
 
       // 6) Assign users (UserTasks)
@@ -107,12 +106,14 @@ class TaskController {
       }
 
       // 7) Subtask
-      if (Array.isArray(Subtask) && Subtask.length) {
-        const rows = Subtask.filter((s) => s && s.title).map((s) => ({
-          title: s.title,
-          isDone: !!s.isDone,
-          taskId: task.id,
-        }));
+      if (Array.isArray(subtasks) && subtasks.length) {
+        const rows = subtasks
+          .filter((s) => s && s.title)
+          .map((s) => ({
+            title: s.title,
+            isDone: !!s.isDone,
+            taskId: task.id,
+          }));
         if (rows.length) await Subtask.bulkCreate(rows, { transaction: t });
       }
 
@@ -162,7 +163,7 @@ class TaskController {
               userId: user.id,
               taskId: task.id,
             },
-            { transaction: t },
+            { transaction: t }
           );
         }
         const io = getIO();
@@ -198,7 +199,7 @@ class TaskController {
                     userId: user.id,
                     taskId: task.id,
                   },
-                  { transaction: t },
+                  { transaction: t }
                 );
               }
 
@@ -210,7 +211,6 @@ class TaskController {
           }
         }
       }
-
       await t.commit();
       return res.status(201).json({
         message: "Task created",
@@ -337,7 +337,7 @@ class TaskController {
               userId: user.id,
               taskId,
             },
-            { transaction },
+            { transaction }
           );
         }
 
@@ -431,7 +431,7 @@ class TaskController {
           {
             where: { columnId: task.columnId, order: { [Op.gt]: task.order } },
             transaction: t,
-          },
+          }
         );
       }
 
@@ -453,7 +453,7 @@ class TaskController {
               userId: user.id,
               taskId,
             },
-            { transaction: t },
+            { transaction: t }
           );
         }
 
@@ -480,7 +480,6 @@ class TaskController {
         include: [{ model: Column, include: [Board] }, { model: Subtask }],
         order: [["updatedAt", "DESC"]],
       });
-
       const perBoard = new Map();
 
       for (const t of tasks) {
@@ -494,7 +493,7 @@ class TaskController {
         if (!subScores.length) continue;
 
         const finalScore = Math.round(
-          subScores.reduce((a, b) => a + b, 0) / subScores.length,
+          subScores.reduce((a, b) => a + b, 0) / subScores.length
         );
 
         const cur = perBoard.get(board.id) || { name: board.name, scores: [] };
@@ -502,7 +501,6 @@ class TaskController {
         perBoard.set(board.id, cur);
       }
 
-      // Board score — ամենաբարձր սուբթասկերի միջինը
       let rows = Array.from(perBoard.entries()).map(([boardId, v]) => ({
         x: v,
         boardId: Number(boardId),
@@ -512,7 +510,6 @@ class TaskController {
 
       rows.sort((a, b) => b.score - a.score);
       rows = rows.slice(0, limit);
-
       res.json(rows);
     } catch (e) {
       console.error("Error in urgency:", e);

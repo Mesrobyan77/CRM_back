@@ -33,7 +33,6 @@ boardRecentRouter.get(
   async (req, res, next) => {
     try {
       const userId = req.user.id;
-      const limit = Number(req.query.limit || 3);
       const now = new Date();
       const last14 = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
       const next7 = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -170,7 +169,6 @@ boardRecentRouter.get(
       let metrics = Array.from(map.values());
       metrics.forEach((m) => (m.score = scoreOf(m)));
       metrics.sort((a, b) => b.score - a.score);
-      metrics = metrics.slice(0, limit);
 
       if (!metrics.length) return res.json([]);
 
